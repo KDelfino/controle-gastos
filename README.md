@@ -39,4 +39,8 @@ npm install
 yarn install
 ```
 
+Rode 
+```bash
+npm run dev
+```
 Abra http://localhost:5173 (ou a porta indicada) no navegador.
