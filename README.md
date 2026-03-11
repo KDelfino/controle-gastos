@@ -9,6 +9,10 @@ Aplicação simples para controle de despesas pessoais, construída com React, T
 - Modal para adicionar despesas.
 - Projeto responsivo e tipado com TypeScript.
 
+**Póssiveis atualizações**
+- Hoje o site salva pelos dados do navegador, criar uma base de dados para salvar úsuario, ou fazer com o importação e exportação de excel 
+- Adicionar sistema de ganhos também, como salário etc.
+
 **Tecnologias**
 - React
 - TypeScript
