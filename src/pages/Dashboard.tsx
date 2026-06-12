@@ -7,7 +7,7 @@ import { usePreferences } from '../context/PreferencesContext';
 import { CreditCard, Form, NotepadText, Settings } from "lucide-react";
 
 interface DashboardProps {
-  onNavigate: (page: 'salary' | 'detail' | 'settings', category?: Category) => void;
+  onNavigate: (page: 'salary' | 'detail' | 'settings', category?: Category | string) => void;
 }
 
 const CATEGORIES: { category: Category; title: string; icon: React.ReactNode; accentColor: string }[] = [

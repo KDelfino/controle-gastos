@@ -3,7 +3,7 @@ import type { Category, ExpenseItem } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
 
 interface AddExpenseModalProps {
-  category: Category;
+  category: Category | string;
   onClose: () => void;
   editItem?: ExpenseItem;
 }
