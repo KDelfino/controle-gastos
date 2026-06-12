@@ -5,6 +5,21 @@ export interface ExpenseItem {
   description: string;
   amount: number;        // valor por parcela
   date: string;          // YYYY-MM-DD — data da 1ª parcela
-  category: Category;
+  category: Category | string;  // pode ser categoria padrão ou nome de módulo customizado
   installments: number;  // 1 = único, N = repete por N meses
+}
+
+export interface SalaryItem {
+  id: string;
+  amount: number;        // valor do salário
+  yearMonth: string;     // YYYY-MM (ex: 2026-01)
+  description?: string;  // opcional, ex: "Salário Janeiro"
+}
+
+export interface CustomModule {
+  id: string;
+  name: string;           // ex: "Gastos da Maria"
+  color: string;          // ex: "#ff6b6b"
+  description?: string;   // ex: "Despesas pessoais"
+  createdAt: string;      // YYYY-MM-DD
 }

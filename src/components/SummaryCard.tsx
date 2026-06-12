@@ -2,10 +2,11 @@ import type { Category } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
 
 interface SummaryCardProps {
-  category: Category;
+  category: Category | string;
   title: string;
-  icon: React.ReactNode;
-  accentColor: string;
+  icon?: React.ReactNode;
+  accentColor?: string;
+  customColor?: string;
   onViewAll: () => void;
 }
 
@@ -16,18 +17,20 @@ export default function SummaryCard({
   category,
   title,
   icon,
-  accentColor,
+  accentColor = '#a78bfa',
+  customColor,
   onViewAll,
 }: SummaryCardProps) {
   const { getFilteredExpenses, getInstallmentNumber, selectedMonth, selectedYear } = useExpenses();
   const items = getFilteredExpenses(category);
   const total = items.reduce((sum, item) => sum + item.amount, 0);
   const top3 = [...items].sort((a, b) => b.amount - a.amount).slice(0, 3);
+  const color = customColor || accentColor;
 
   return (
-    <div className="summary-card" style={{ '--accent': accentColor } as React.CSSProperties}>
+    <div className="summary-card" style={{ '--accent': color } as React.CSSProperties}>
       <div className="summary-card-header">
-        <span className="summary-icon">{icon}</span>
+        {icon && <span className="summary-icon">{icon}</span>}
         <div>
           <h2 className="summary-title">{title}</h2>
           <p className="summary-total">{fmt(total)}</p>

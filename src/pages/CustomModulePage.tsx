@@ -1,20 +1,14 @@
 import { useState } from 'react';
-import type { Category, ExpenseItem } from '../types';
+import type { ExpenseItem } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
 import MonthSelector from '../components/MonthSelector';
 import AddExpenseModal from '../components/AddExpenseModal';
-import { CreditCard, Form, MoveLeft, NotepadText, Pen, Search, Trash2 } from "lucide-react";
+import { MoveLeft, Pen, Search, Trash2 } from 'lucide-react';
 
-interface CategoryPageProps {
-  category: Category | string;
+interface CustomModulePageProps {
+  moduleId: string;
   onBack: () => void;
 }
-
-const CATEGORY_META: Record<Category, { title: string; icon: React.ReactNode; accentColor: string }> = {
-  cartao: { title: 'Cartão de Crédito', icon: <CreditCard size={20} />, accentColor: '#a78bfa' },
-  mensal: { title: 'Contas Mensais', icon: <Form size={20} />, accentColor: '#a78bfa' },
-  geral: { title: 'Gastos Gerais', icon: <NotepadText size={20} />, accentColor: '#a78bfa' },
-};
 
 const fmt = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -28,39 +22,42 @@ type SortOrder = 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc';
 
 const SORT_OPTIONS: { value: SortOrder; label: string }[] = [
   { value: 'date-desc', label: 'Mais recente' },
-  { value: 'date-asc',  label: 'Mais antigo' },
+  { value: 'date-asc', label: 'Mais antigo' },
   { value: 'amount-desc', label: 'Maior valor' },
-  { value: 'amount-asc',  label: 'Menor valor' },
+  { value: 'amount-asc', label: 'Menor valor' },
 ];
 
-export default function CategoryPage({ category, onBack }: CategoryPageProps) {
-  const { getFilteredExpenses, removeExpense, getInstallmentNumber, selectedMonth, selectedYear, customModules } = useExpenses();
+export default function CustomModulePage({ moduleId, onBack }: CustomModulePageProps) {
+  const { getFilteredExpenses, removeExpense, getInstallmentNumber, selectedMonth, selectedYear, customModules } =
+    useExpenses();
+
+  const module = customModules.find(m => m.id === moduleId);
+
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<ExpenseItem | undefined>();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('date-desc');
 
-  // Pega meta do built-in ou do customModule
-  const builtInMeta = CATEGORY_META[category as Category];
-  const customModule = customModules.find(m => m.id === category);
-  const title = builtInMeta?.title || customModule?.name || 'Gastos';
-  const icon = builtInMeta?.icon || null;
-  const accentColor = customModule?.color || builtInMeta?.accentColor || '#a78bfa';
+  if (!module) {
+    return <div>Módulo não encontrado</div>;
+  }
 
-  const items = getFilteredExpenses(category);
+  const items = getFilteredExpenses(moduleId);
   const total = items.reduce((sum, i) => sum + i.amount, 0);
 
-  const filtered = items.filter(i =>
-    i.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = items.filter(i => i.description.toLowerCase().includes(search.toLowerCase()));
 
   const sorted = [...filtered].sort((a, b) => {
     switch (sortOrder) {
-      case 'date-desc': return new Date(b.date).getTime() - new Date(a.date).getTime();
-      case 'date-asc':  return new Date(a.date).getTime() - new Date(b.date).getTime();
-      case 'amount-desc': return b.amount - a.amount;
-      case 'amount-asc':  return a.amount - b.amount;
+      case 'date-desc':
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      case 'date-asc':
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      case 'amount-desc':
+        return b.amount - a.amount;
+      case 'amount-asc':
+        return a.amount - b.amount;
     }
   });
 
@@ -90,9 +87,9 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
           <button className="btn-back" onClick={onBack}>
             <MoveLeft size={16} /> Voltar
           </button>
-          <h1 className="app-title" style={{ color: accentColor }}>
-            {icon && <span className="title-icon">{icon}</span>}
-            {title}
+          <h1 className="app-title">
+            <span className="title-icon" style={{ backgroundColor: module.color, width: 28, height: 28, borderRadius: 6 }} />
+            {module.name}
           </h1>
         </div>
         <MonthSelector />
@@ -114,7 +111,7 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
           <input
             className="search-input"
             type="text"
-            placeholder="Buscar gasto..."
+            placeholder="Buscar despesa..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -134,11 +131,16 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
 
       {sorted.length === 0 ? (
         <div className="empty-state">
-          {search
-            ? <p>Nenhum resultado para "<strong>{search}</strong>".</p>
-            : <><p>Nenhum gasto registrado neste mês.</p>
-                <button className="btn btn-primary" onClick={handleAdd}>Adicionar primeiro gasto</button></>
-          }
+          {search ? (
+            <p>Nenhum resultado para "<strong>{search}</strong>".</p>
+          ) : (
+            <>
+              <p>Nenhuma despesa registrada neste mês.</p>
+              <button className="btn btn-primary" onClick={handleAdd}>
+                Adicionar primeira despesa
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <div className="table-wrapper">
@@ -159,9 +161,7 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
                   <tr key={item.id}>
                     <td>
                       <span className="item-desc-cell">{item.description}</span>
-                      {current !== null && (
-                        <span className="installment-badge">{current}/{n}</span>
-                      )}
+                      {current !== null && <span className="installment-badge">{current}/{n}</span>}
                     </td>
                     <td>{fmtDate(item.date)}</td>
                     <td className="col-amount amount-cell">{fmt(item.amount)}</td>
@@ -188,7 +188,9 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={2}><strong>Total{search ? ' (filtrado)' : ''}</strong></td>
+                <td colSpan={2}>
+                  <strong>Total{search ? ' (filtrado)' : ''}</strong>
+                </td>
                 <td className="col-amount amount-cell">
                   <strong>{fmt(filtered.reduce((s, i) => s + i.amount, 0))}</strong>
                 </td>
@@ -201,7 +203,7 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
 
       {showModal && (
         <AddExpenseModal
-          category={category}
+          category={moduleId}
           onClose={() => setShowModal(false)}
           editItem={editItem}
         />

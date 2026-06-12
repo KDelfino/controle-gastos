@@ -80,6 +80,31 @@ body {
   letter-spacing: -.01em;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-settings {
+  background: var(--surface-3);
+  border: 1px solid var(--border-acc);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: var(--accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s, border-color .15s;
+}
+
+.btn-settings:hover {
+  background: rgba(167,139,250,.15);
+  color: var(--text);
+  border-color: var(--accent);
+}
+
 /* ===== MONTH SELECTOR ===== */
 .month-selector {
   display: inline-flex;
@@ -644,6 +669,312 @@ body {
   font-size: .78rem;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+/* ===== SALARY CARD ===== */
+.salary-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent, #10b981);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: box-shadow .25s, transform .25s, border-color .25s;
+  cursor: default;
+  grid-column: 1 / -1;
+}
+
+.salary-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
+  border-color: rgba(16,185,129,.3);
+}
+
+.salary-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.salary-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(16,185,129,.12);
+  border-radius: 10px;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.salary-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.01em;
+  margin-bottom: 2px;
+}
+
+.salary-total {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #10b981;
+  letter-spacing: -.02em;
+}
+
+.balance-indicator {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.balance-positive {
+  color: #10b981;
+}
+
+.balance-negative {
+  color: #ef4444;
+}
+
+.salary-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.salary-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--surface-3);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.item-label {
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.item-amount {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.salary-amount {
+  color: #10b981;
+}
+
+.expenses-amount {
+  color: #ef4444;
+}
+
+/* ===== SETTINGS PAGE ===== */
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.settings-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.settings-section-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 8px;
+  letter-spacing: -.01em;
+}
+
+.settings-section-desc {
+  font-size: .85rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.module-card {
+  background: var(--surface-3);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  transition: all .2s;
+  cursor: pointer;
+}
+
+.module-card:hover {
+  border-color: var(--accent);
+  background: rgba(167,139,250,.05);
+}
+
+.module-checkbox-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.module-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.module-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.module-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.module-title {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -.01em;
+}
+
+.module-description {
+  font-size: .8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.settings-info {
+  background: rgba(167,139,250,.08);
+  border: 1px solid var(--border-acc);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: .85rem;
+  color: var(--text);
+}
+
+.settings-info p {
+  margin: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: .8rem;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-empty {
+  padding: 32px 16px;
+  text-align: center;
+  background: var(--surface-3);
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+}
+
+.custom-modules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.custom-module-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.custom-module-color {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.custom-module-info {
+  flex: 1;
+}
+
+.custom-module-name {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 2px;
+}
+
+.custom-module-desc {
+  font-size: .75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.custom-module-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+}
+
+.btn-icon:hover {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+.btn-icon-danger:hover {
+  color: #ef4444;
 }
 
 /* ===== SCROLLBAR ===== */

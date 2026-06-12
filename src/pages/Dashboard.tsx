@@ -1,11 +1,13 @@
 import MonthSelector from '../components/MonthSelector';
 import SummaryCard from '../components/SummaryCard';
+import SalaryCard from '../components/SalaryCard';
 import type { Category } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
-import { CreditCard, Form, NotepadText } from "lucide-react";
+import { usePreferences } from '../context/PreferencesContext';
+import { CreditCard, Form, NotepadText, Settings } from "lucide-react";
 
 interface DashboardProps {
-  onNavigate: (category: Category) => void;
+  onNavigate: (page: 'salary' | 'detail' | 'settings', category?: Category) => void;
 }
 
 const CATEGORIES: { category: Category; title: string; icon: React.ReactNode; accentColor: string }[] = [
@@ -18,10 +20,16 @@ const fmt = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
-  const { getFilteredExpenses } = useExpenses();
+  const { getFilteredExpenses, customModules } = useExpenses();
+  const { isEnabled } = usePreferences();
 
-  const grandTotal = CATEGORIES.reduce((sum, { category }) => {
+  const expenseCategories = CATEGORIES.filter(c => isEnabled(c.category));
+
+  const grandTotal = expenseCategories.reduce((sum, { category }) => {
     const items = getFilteredExpenses(category);
+    return sum + items.reduce((s, i) => s + i.amount, 0);
+  }, 0) + customModules.reduce((sum, module) => {
+    const items = getFilteredExpenses(module.id);
     return sum + items.reduce((s, i) => s + i.amount, 0);
   }, 0);
 
@@ -30,23 +38,58 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
       <header className="app-header">
         <div className="header-top">
           <h1 className="app-title">Controle de Gastos</h1>
-          <span className="grand-total">{fmt(grandTotal)}</span>
+          <div className="header-right">
+            <span className="grand-total">{fmt(grandTotal)}</span>
+            <button
+              className="btn-settings"
+              title="Configurações"
+              onClick={() => onNavigate('settings')}
+            >
+              <Settings size={20} />
+            </button>
+          </div>
         </div>
         <MonthSelector />
       </header>
 
-      <div className="cards-grid">
-        {CATEGORIES.map(c => (
-          <SummaryCard
-            key={c.category}
-            category={c.category}
-            title={c.title}
-            icon={c.icon}
-            accentColor={c.accentColor}
-            onViewAll={() => onNavigate(c.category)}
-          />
-        ))}
-      </div>
+      {!isEnabled('salary') && expenseCategories.length === 0 ? (
+        <div className="empty-state">
+          <p>Nenhum módulo ativado. Clique em Configurações para ativar módulos.</p>
+          <button className="btn btn-primary" onClick={() => onNavigate('settings')}>
+            Abrir Configurações
+          </button>
+        </div>
+      ) : (
+        <>
+          {isEnabled('salary') && (
+            <div className="cards-grid">
+              <SalaryCard onViewAll={() => onNavigate('salary')} />
+            </div>
+          )}
+
+          <div className="cards-grid">
+            {expenseCategories.map(c => (
+              <SummaryCard
+                key={c.category}
+                category={c.category}
+                title={c.title}
+                icon={c.icon}
+                accentColor={c.accentColor}
+                onViewAll={() => onNavigate('detail', c.category)}
+              />
+            ))}
+            {customModules.map(module => (
+              <SummaryCard
+                key={module.id}
+                category={module.id}
+                title={module.name}
+                onViewAll={() => onNavigate('detail', module.id)}
+                customColor={module.color}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
