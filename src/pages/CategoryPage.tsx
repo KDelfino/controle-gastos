@@ -158,10 +158,15 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
                 return (
                   <tr key={item.id}>
                     <td>
-                      <span className="item-desc-cell">{item.description}</span>
-                      {current !== null && (
-                        <span className="installment-badge">{current}/{n}</span>
+                      {current !== null && current === n && (
+                        <div className="last-installment-label">Última parcela!</div>
                       )}
+                      <div>
+                        <span className="item-desc-cell">{item.description}</span>
+                        {current !== null && (
+                          <span className="installment-badge">{current}/{n}</span>
+                        )}
+                      </div>
                     </td>
                     <td>{fmtDate(item.date)}</td>
                     <td className="col-amount amount-cell">{fmt(item.amount)}</td>

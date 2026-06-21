@@ -19,9 +19,10 @@ export default function AddExpenseModal({ category, onClose, editItem }: AddExpe
   const [description, setDescription] = useState(editItem?.description ?? '');
   const [amount, setAmount] = useState(editItem?.amount?.toString() ?? '');
   const [date, setDate] = useState(editItem?.date ?? defaultDate);
-  const [installments, setInstallments] = useState(editItem?.installments ?? 1);
+  const [installmentsInput, setInstallmentsInput] = useState(editItem?.installments?.toString() ?? '1');
 
   const parsedAmount = parseFloat(amount.replace(',', '.')) || 0;
+  const installmentsNum = Math.max(1, parseInt(installmentsInput) || 1);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +31,7 @@ export default function AddExpenseModal({ category, onClose, editItem }: AddExpe
       amount: parsedAmount,
       date,
       category,
-      installments,
+      installments: installmentsNum,
     };
     if (editItem) {
       updateExpense(editItem.id, payload);
@@ -62,7 +63,7 @@ export default function AddExpenseModal({ category, onClose, editItem }: AddExpe
           </label>
 
           <label className="form-label">
-            {installments > 1 ? 'Valor por parcela (R$)' : 'Valor (R$)'}
+            {installmentsNum > 1 ? 'Valor por parcela (R$)' : 'Valor (R$)'}
             <input
               className="form-input"
               type="number"
@@ -72,9 +73,9 @@ export default function AddExpenseModal({ category, onClose, editItem }: AddExpe
               onChange={e => setAmount(e.target.value)}
               required
             />
-            {installments > 1 && parsedAmount > 0 && (
+            {installmentsNum > 1 && parsedAmount > 0 && (
               <span className="form-hint">
-                Total: {fmt(parsedAmount * installments)} em {installments}x
+                Total: {fmt(parsedAmount * installmentsNum)} em {installmentsNum}x
               </span>
             )}
           </label>
@@ -87,17 +88,18 @@ export default function AddExpenseModal({ category, onClose, editItem }: AddExpe
                 type="number"
                 min={1}
                 max={360}
-                value={installments}
-                onChange={e => setInstallments(Math.max(1, parseInt(e.target.value) || 1))}
+                value={installmentsInput}
+                onChange={e => setInstallmentsInput(e.target.value)}
+                required
               />
               <span className="installments-hint">
-                {installments === 1 ? 'pagamento único' : `${installments} meses`}
+                {installmentsNum === 1 ? 'pagamento único' : `${installmentsNum} meses`}
               </span>
             </div>
           </label>
 
           <label className="form-label">
-            {installments > 1 ? 'Data da 1ª parcela' : 'Data'}
+            {installmentsNum > 1 ? 'Data da 1ª parcela' : 'Data'}
             <input
               className="form-input"
               type="date"

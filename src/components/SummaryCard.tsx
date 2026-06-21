@@ -47,6 +47,9 @@ export default function SummaryCard({
             return (
               <li key={item.id} className="summary-list-item">
                 <span className="item-desc">
+                  {current !== null && current === n && (
+                    <span className="last-installment-label" style={{ marginRight: '6px', marginBottom: 0 }}>Última</span>
+                  )}
                   {item.description}
                   {current !== null && (
                     <span className="installment-badge">{current}/{n}</span>
