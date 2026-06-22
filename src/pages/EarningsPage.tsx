@@ -12,8 +12,11 @@ interface EarningsPageProps {
 const fmt = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-const fmtDate = (date: string) => {
-  const [year, month, day] = date.split('-');
+const fmtDate = (date?: string) => {
+  if (!date) return '-';
+  const parts = date.split('-');
+  if (parts.length < 3) return date;
+  const [year, month, day] = parts;
   return `${day}/${month}/${year}`;
 };
 
@@ -37,9 +40,11 @@ export default function EarningsPage({ onBack }: EarningsPageProps) {
   const activeEarnings = getFilteredSalaries();
   
   // Ordena por data decrescente
-  const sortedEarnings = [...activeEarnings].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const sortedEarnings = [...activeEarnings].sort((a, b) => {
+    const dateA = a.date || ((a as any).yearMonth ? `${(a as any).yearMonth}-01` : '');
+    const dateB = b.date || ((b as any).yearMonth ? `${(b as any).yearMonth}-01` : '');
+    return new Date(dateB).getTime() - new Date(dateA).getTime();
+  });
 
   const handleEdit = (item: SalaryItem) => {
     setEditItem(item);

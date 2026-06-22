@@ -172,7 +172,9 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
   const getSalaryForMonth = (month: number, year: number): number => {
     const selYM = year * 12 + (month - 1);
     return salaries.filter(s => {
-      const [sy, sm] = s.date.split('-').map(Number);
+      const dateStr = s.date || ((s as any).yearMonth ? `${(s as any).yearMonth}-01` : null);
+      if (!dateStr) return false;
+      const [sy, sm] = dateStr.split('-').map(Number);
       const startYM = sy * 12 + (sm - 1);
       const n = s.installments ?? 1;
       return selYM >= startYM && selYM < startYM + n;
@@ -180,14 +182,18 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
   };
 
   const getSalaryInstallmentNumber = (item: SalaryItem, month: number, year: number): number => {
-    const [sy, sm] = item.date.split('-').map(Number);
+    const dateStr = item.date || ((item as any).yearMonth ? `${(item as any).yearMonth}-01` : null);
+    if (!dateStr) return 1;
+    const [sy, sm] = dateStr.split('-').map(Number);
     return (year * 12 + (month - 1)) - (sy * 12 + (sm - 1)) + 1;
   };
 
   const getFilteredSalaries = (): SalaryItem[] => {
     const selYM = selectedYear * 12 + (selectedMonth - 1);
     return salaries.filter(s => {
-      const [sy, sm] = s.date.split('-').map(Number);
+      const dateStr = s.date || ((s as any).yearMonth ? `${(s as any).yearMonth}-01` : null);
+      if (!dateStr) return false;
+      const [sy, sm] = dateStr.split('-').map(Number);
       const startYM = sy * 12 + (sm - 1);
       const n = s.installments ?? 1;
       return selYM >= startYM && selYM < startYM + n;
