@@ -11,9 +11,9 @@ interface SettingsPageProps {
 }
 
 const MODULES_INFO: Record<ModuleType, { title: string; description: string; icon: string }> = {
-  salary: {
-    title: 'Salário',
-    description: 'Mostra seu salário mensal e o saldo (entrada - gastos)',
+  earnings: {
+    title: 'Ganhos',
+    description: 'Mostra seus ganhos mensais (salário, freelance, etc) e o saldo (entradas - gastos)',
     icon: '💰',
   },
   cartao: {
@@ -53,7 +53,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [formDesc, setFormDesc] = useState('');
   const [formColor, setFormColor] = useState(COLOR_OPTIONS[6]); // purple default
 
-  const modules: ModuleType[] = ['salary', 'cartao', 'mensal', 'geral'];
+  const modules: ModuleType[] = ['earnings', 'cartao', 'mensal', 'geral'];
 
   const handleCreate = () => {
     if (!formName.trim()) return;

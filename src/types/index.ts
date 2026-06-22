@@ -11,9 +11,10 @@ export interface ExpenseItem {
 
 export interface SalaryItem {
   id: string;
-  amount: number;        // valor do salário
-  yearMonth: string;     // YYYY-MM (ex: 2026-01)
-  description?: string;  // opcional, ex: "Salário Janeiro"
+  amount: number;        // valor do ganho
+  date: string;          // YYYY-MM-DD — data do 1º recebimento
+  description?: string;  // opcional, ex: "Freelance", "Salário"
+  installments: number;  // 1 = único, N = repete por N meses
 }
 
 export interface CustomModule {

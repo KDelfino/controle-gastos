@@ -3,7 +3,7 @@ import { ExpenseProvider, useExpenses } from './context/ExpenseContext';
 import { PreferencesProvider } from './context/PreferencesContext';
 import Dashboard from './pages/Dashboard';
 import CategoryPage from './pages/CategoryPage';
-import SalaryPage from './pages/SalaryPage';
+import EarningsPage from './pages/EarningsPage';
 import SettingsPage from './pages/SettingsPage';
 import AuthScreen from './components/AuthScreen';
 import type { Category } from './types';
@@ -13,7 +13,7 @@ import { Loader } from 'lucide-react';
 type View 
   = { page: 'dashboard' } 
   | { page: 'detail'; category: Category | string }
-  | { page: 'salary' }
+  | { page: 'earnings' }
   | { page: 'settings' };
 
 function AppContent() {
@@ -43,9 +43,9 @@ function AppContent() {
     );
   }
 
-  if (view.page === 'salary') {
+  if (view.page === 'earnings') {
     return (
-      <SalaryPage
+      <EarningsPage
         onBack={() => setView({ page: 'dashboard' })}
       />
     );
@@ -62,8 +62,8 @@ function AppContent() {
 
   return (
     <Dashboard onNavigate={(page, category) => {
-      if (page === 'salary') {
-        setView({ page: 'salary' });
+      if (page === 'earnings') {
+        setView({ page: 'earnings' });
       } else if (page === 'settings') {
         setView({ page: 'settings' });
       } else if (category) {

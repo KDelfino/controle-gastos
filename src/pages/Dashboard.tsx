@@ -1,13 +1,13 @@
 import MonthSelector from '../components/MonthSelector';
 import SummaryCard from '../components/SummaryCard';
-import SalaryCard from '../components/SalaryCard';
+import EarningsCard from '../components/EarningsCard';
 import type { Category } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
 import { usePreferences } from '../context/PreferencesContext';
 import { CreditCard, Form, NotepadText, Settings } from "lucide-react";
 
 interface DashboardProps {
-  onNavigate: (page: 'salary' | 'detail' | 'settings', category?: Category | string) => void;
+  onNavigate: (page: 'earnings' | 'detail' | 'settings', category?: Category | string) => void;
 }
 
 const CATEGORIES: { category: Category; title: string; icon: React.ReactNode; accentColor: string }[] = [
@@ -39,7 +39,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         <div className="header-top">
           <h1 className="app-title">Controle de Gastos</h1>
           <div className="header-right">
-            <span className="grand-total">{fmt(grandTotal)}</span>
+            <span className="grand-total" title="Total de despesas do mês">{fmt(grandTotal)}</span>
             <button
               className="btn-settings"
               title="Configurações"
@@ -52,7 +52,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         <MonthSelector />
       </header>
 
-      {!isEnabled('salary') && expenseCategories.length === 0 ? (
+      {!isEnabled('earnings') && expenseCategories.length === 0 ? (
         <div className="empty-state">
           <p>Nenhum módulo ativado. Clique em Configurações para ativar módulos.</p>
           <button className="btn btn-primary" onClick={() => onNavigate('settings')}>
@@ -61,9 +61,9 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         </div>
       ) : (
         <>
-          {isEnabled('salary') && (
-            <div className="cards-grid">
-              <SalaryCard onViewAll={() => onNavigate('salary')} />
+          {isEnabled('earnings') && (
+            <div className="cards-grid" style={{ marginBottom: '20px' }}>
+              <EarningsCard onViewAll={() => onNavigate('earnings')} />
             </div>
           )}
 

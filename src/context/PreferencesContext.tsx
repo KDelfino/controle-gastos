@@ -4,7 +4,7 @@ import { auth, db } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 
-export type ModuleType = 'salary' | 'cartao' | 'mensal' | 'geral';
+export type ModuleType = 'earnings' | 'cartao' | 'mensal' | 'geral';
 
 interface PreferencesContextType {
   enabledModules: ModuleType[];

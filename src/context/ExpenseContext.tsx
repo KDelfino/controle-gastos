@@ -30,6 +30,8 @@ interface ExpenseContextType {
   removeSalary: (id: string) => Promise<void>;
   updateSalary: (id: string, item: Omit<SalaryItem, 'id'>) => Promise<void>;
   getSalaryForMonth: (month: number, year: number) => number;
+  getSalaryInstallmentNumber: (item: SalaryItem, month: number, year: number) => number;
+  getFilteredSalaries: () => SalaryItem[];
   getTotalExpensesForMonth: (month: number, year: number) => number;
   getBalance: (month: number, year: number) => number;
   customModules: CustomModule[];
@@ -168,9 +170,28 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
   };
 
   const getSalaryForMonth = (month: number, year: number): number => {
-    const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
-    const salary = salaries.find(s => s.yearMonth === yearMonth);
-    return salary?.amount ?? 0;
+    const selYM = year * 12 + (month - 1);
+    return salaries.filter(s => {
+      const [sy, sm] = s.date.split('-').map(Number);
+      const startYM = sy * 12 + (sm - 1);
+      const n = s.installments ?? 1;
+      return selYM >= startYM && selYM < startYM + n;
+    }).reduce((sum, s) => sum + s.amount, 0);
+  };
+
+  const getSalaryInstallmentNumber = (item: SalaryItem, month: number, year: number): number => {
+    const [sy, sm] = item.date.split('-').map(Number);
+    return (year * 12 + (month - 1)) - (sy * 12 + (sm - 1)) + 1;
+  };
+
+  const getFilteredSalaries = (): SalaryItem[] => {
+    const selYM = selectedYear * 12 + (selectedMonth - 1);
+    return salaries.filter(s => {
+      const [sy, sm] = s.date.split('-').map(Number);
+      const startYM = sy * 12 + (sm - 1);
+      const n = s.installments ?? 1;
+      return selYM >= startYM && selYM < startYM + n;
+    });
   };
 
   const getTotalExpensesForMonth = (month: number, year: number): number => {
@@ -275,6 +296,8 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         removeSalary,
         updateSalary,
         getSalaryForMonth,
+        getSalaryInstallmentNumber,
+        getFilteredSalaries,
         getTotalExpensesForMonth,
         getBalance,
         customModules,

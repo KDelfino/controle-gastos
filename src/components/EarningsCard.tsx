@@ -1,18 +1,18 @@
 import { useExpenses } from '../context/ExpenseContext';
 import { DollarSign } from 'lucide-react';
 
-interface SalaryCardProps {
+interface EarningsCardProps {
   onViewAll: () => void;
 }
 
 const fmt = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-export default function SalaryCard({ onViewAll }: SalaryCardProps) {
+export default function EarningsCard({ onViewAll }: EarningsCardProps) {
   const { getSalaryForMonth, getTotalExpensesForMonth, getBalance, selectedMonth, selectedYear } =
     useExpenses();
 
-  const salary = getSalaryForMonth(selectedMonth, selectedYear);
+  const totalEarnings = getSalaryForMonth(selectedMonth, selectedYear);
   const expenses = getTotalExpensesForMonth(selectedMonth, selectedYear);
   const balance = getBalance(selectedMonth, selectedYear);
 
@@ -35,17 +35,17 @@ export default function SalaryCard({ onViewAll }: SalaryCardProps) {
 
       <ul className="salary-list">
         <li className="salary-list-item">
-          <span className="item-label">Salário</span>
-          <span className="item-amount salary-amount">{fmt(salary)}</span>
+          <span className="item-label">Total de Ganhos</span>
+          <span className="item-amount salary-amount">{fmt(totalEarnings)}</span>
         </li>
         <li className="salary-list-item">
-          <span className="item-label">Gastos</span>
+          <span className="item-label">Total de Gastos</span>
           <span className="item-amount expenses-amount">{fmt(expenses)}</span>
         </li>
       </ul>
 
       <button className="btn-view-all" onClick={onViewAll}>
-        Gerenciar salário
+        Gerenciar Ganhos
       </button>
     </div>
   );
