@@ -1,12 +1,24 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Category, ExpenseItem, SalaryItem, CustomModule } from '../types';
+import { auth, db } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { 
+  collection, 
+  doc, 
+  onSnapshot, 
+  setDoc, 
+  addDoc, 
+  deleteDoc 
+} from 'firebase/firestore';
 
 interface ExpenseContextType {
+  user: any;
+  loading: boolean;
   expenses: ExpenseItem[];
-  addExpense: (item: Omit<ExpenseItem, 'id'>) => void;
-  removeExpense: (id: string) => void;
-  updateExpense: (id: string, item: Omit<ExpenseItem, 'id'>) => void;
+  addExpense: (item: Omit<ExpenseItem, 'id'>) => Promise<void>;
+  removeExpense: (id: string) => Promise<void>;
+  updateExpense: (id: string, item: Omit<ExpenseItem, 'id'>) => Promise<void>;
   selectedMonth: number;
   selectedYear: number;
   setSelectedMonth: (month: number) => void;
@@ -14,92 +26,145 @@ interface ExpenseContextType {
   getFilteredExpenses: (category: Category | string) => ExpenseItem[];
   getInstallmentNumber: (item: ExpenseItem, month: number, year: number) => number;
   salaries: SalaryItem[];
-  addSalary: (item: Omit<SalaryItem, 'id'>) => void;
-  removeSalary: (id: string) => void;
-  updateSalary: (id: string, item: Omit<SalaryItem, 'id'>) => void;
+  addSalary: (item: Omit<SalaryItem, 'id'>) => Promise<void>;
+  removeSalary: (id: string) => Promise<void>;
+  updateSalary: (id: string, item: Omit<SalaryItem, 'id'>) => Promise<void>;
   getSalaryForMonth: (month: number, year: number) => number;
   getTotalExpensesForMonth: (month: number, year: number) => number;
   getBalance: (month: number, year: number) => number;
   customModules: CustomModule[];
-  addCustomModule: (item: Omit<CustomModule, 'id' | 'createdAt'>) => void;
-  removeCustomModule: (id: string) => void;
-  updateCustomModule: (id: string, item: Omit<CustomModule, 'id' | 'createdAt'>) => void;
+  addCustomModule: (item: Omit<CustomModule, 'id' | 'createdAt'>) => Promise<void>;
+  removeCustomModule: (id: string) => Promise<void>;
+  updateCustomModule: (id: string, item: Omit<CustomModule, 'id' | 'createdAt'>) => Promise<void>;
 }
 
 const ExpenseContext = createContext<ExpenseContextType | null>(null);
 
-const STORAGE_KEY = 'controle_gastos_v1';
-const SALARY_STORAGE_KEY = 'controle_gastos_salaries_v1';
-const CUSTOM_MODULES_STORAGE_KEY = 'controle_gastos_custom_modules_v1';
-
 export function ExpenseProvider({ children }: { children: ReactNode }) {
-  const [expenses, setExpenses] = useState<ExpenseItem[]>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [salaries, setSalaries] = useState<SalaryItem[]>(() => {
-    try {
-      const stored = localStorage.getItem(SALARY_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [customModules, setCustomModules] = useState<CustomModule[]>(() => {
-    try {
-      const stored = localStorage.getItem(CUSTOM_MODULES_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [expenses, setExpenses] = useState<ExpenseItem[]>([]);
+  const [salaries, setSalaries] = useState<SalaryItem[]>([]);
+  const [customModules, setCustomModules] = useState<CustomModule[]>([]);
 
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
-  }, [expenses]);
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      
+      if (currentUser) {
+        // Usuário logado: iniciar sincronização em tempo real com Firestore
+        const unsubExpenses = onSnapshot(
+          collection(db, 'users', currentUser.uid, 'expenses'), 
+          (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ExpenseItem));
+            setExpenses(list);
+          },
+          (err) => console.error("Erro ao carregar despesas:", err)
+        );
 
-  useEffect(() => {
-    localStorage.setItem(SALARY_STORAGE_KEY, JSON.stringify(salaries));
-  }, [salaries]);
+        const unsubSalaries = onSnapshot(
+          collection(db, 'users', currentUser.uid, 'salaries'), 
+          (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SalaryItem));
+            setSalaries(list);
+          },
+          (err) => console.error("Erro ao carregar salários:", err)
+        );
 
-  useEffect(() => {
-    localStorage.setItem(CUSTOM_MODULES_STORAGE_KEY, JSON.stringify(customModules));
-  }, [customModules]);
+        const unsubModules = onSnapshot(
+          collection(db, 'users', currentUser.uid, 'customModules'), 
+          (snapshot) => {
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CustomModule));
+            setCustomModules(list);
+            setLoading(false);
+          },
+          (err) => {
+            console.error("Erro ao carregar módulos:", err);
+            setLoading(false);
+          }
+        );
 
-  const addExpense = (item: Omit<ExpenseItem, 'id'>) => {
-    const newItem: ExpenseItem = { ...item, id: crypto.randomUUID() };
-    setExpenses(prev => [...prev, newItem]);
+        return () => {
+          unsubExpenses();
+          unsubSalaries();
+          unsubModules();
+        };
+      } else {
+        // Usuário deslogado: limpar estados e terminar carregamento
+        setExpenses([]);
+        setSalaries([]);
+        setCustomModules([]);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribeAuth();
+  }, []);
+
+  // OPERAÇÕES DE DESPESAS (FIRESTORE)
+  const addExpense = async (item: Omit<ExpenseItem, 'id'>) => {
+    if (!auth.currentUser) return;
+    try {
+      await addDoc(collection(db, 'users', auth.currentUser.uid, 'expenses'), item);
+    } catch (e) {
+      console.error("Erro ao adicionar despesa no Firestore:", e);
+      throw e;
+    }
   };
 
-  const removeExpense = (id: string) => {
-    setExpenses(prev => prev.filter(e => e.id !== id));
+  const removeExpense = async (id: string) => {
+    if (!auth.currentUser) return;
+    try {
+      await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'expenses', id));
+    } catch (e) {
+      console.error("Erro ao remover despesa no Firestore:", e);
+      throw e;
+    }
   };
 
-  const updateExpense = (id: string, item: Omit<ExpenseItem, 'id'>) => {
-    setExpenses(prev => prev.map(e => (e.id === id ? { ...item, id } : e)));
+  const updateExpense = async (id: string, item: Omit<ExpenseItem, 'id'>) => {
+    if (!auth.currentUser) return;
+    try {
+      await setDoc(doc(db, 'users', auth.currentUser.uid, 'expenses', id), item);
+    } catch (e) {
+      console.error("Erro ao atualizar despesa no Firestore:", e);
+      throw e;
+    }
   };
 
-  const addSalary = (item: Omit<SalaryItem, 'id'>) => {
-    const newSalary: SalaryItem = { ...item, id: crypto.randomUUID() };
-    setSalaries(prev => [...prev, newSalary]);
+  // OPERAÇÕES DE SALÁRIOS (FIRESTORE)
+  const addSalary = async (item: Omit<SalaryItem, 'id'>) => {
+    if (!auth.currentUser) return;
+    try {
+      await addDoc(collection(db, 'users', auth.currentUser.uid, 'salaries'), item);
+    } catch (e) {
+      console.error("Erro ao adicionar salário no Firestore:", e);
+      throw e;
+    }
   };
 
-  const removeSalary = (id: string) => {
-    setSalaries(prev => prev.filter(s => s.id !== id));
+  const removeSalary = async (id: string) => {
+    if (!auth.currentUser) return;
+    try {
+      await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'salaries', id));
+    } catch (e) {
+      console.error("Erro ao remover salário no Firestore:", e);
+      throw e;
+    }
   };
 
-  const updateSalary = (id: string, item: Omit<SalaryItem, 'id'>) => {
-    setSalaries(prev => prev.map(s => (s.id === id ? { ...item, id } : s)));
+  const updateSalary = async (id: string, item: Omit<SalaryItem, 'id'>) => {
+    if (!auth.currentUser) return;
+    try {
+      await setDoc(doc(db, 'users', auth.currentUser.uid, 'salaries', id), item);
+    } catch (e) {
+      console.error("Erro ao atualizar salário no Firestore:", e);
+      throw e;
+    }
   };
 
   const getSalaryForMonth = (month: number, year: number): number => {
@@ -108,43 +173,71 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
     return salary?.amount ?? 0;
   };
 
-  const getTotalExpensesForMonth = (): number => {
-    return getFilteredExpenses('cartao').reduce((sum, i) => sum + i.amount, 0) +
-           getFilteredExpenses('mensal').reduce((sum, i) => sum + i.amount, 0) +
-           getFilteredExpenses('geral').reduce((sum, i) => sum + i.amount, 0);
+  const getTotalExpensesForMonth = (month: number, year: number): number => {
+    const selYM = year * 12 + (month - 1);
+    return expenses.filter(e => {
+      const [sy, sm] = e.date.split('-').map(Number);
+      const startYM = sy * 12 + (sm - 1);
+      const n = e.installments ?? 1;
+      return selYM >= startYM && selYM < startYM + n;
+    }).reduce((sum, i) => sum + i.amount, 0);
   };
 
   const getBalance = (month: number, year: number): number => {
-    return getSalaryForMonth(month, year) - getTotalExpensesForMonth();
+    return getSalaryForMonth(month, year) - getTotalExpensesForMonth(month, year);
   };
 
-  const addCustomModule = (item: Omit<CustomModule, 'id' | 'createdAt'>) => {
-    const newModule: CustomModule = {
-      ...item,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    setCustomModules(prev => [...prev, newModule]);
+  // OPERAÇÕES DE MÓDULOS CUSTOMIZADOS (FIRESTORE)
+  const addCustomModule = async (item: Omit<CustomModule, 'id' | 'createdAt'>) => {
+    if (!auth.currentUser) return;
+    try {
+      const newModuleId = `custom_${Date.now()}`;
+      const payload: CustomModule = {
+        ...item,
+        id: newModuleId,
+        createdAt: new Date().toISOString().split('T')[0],
+      };
+      await setDoc(doc(db, 'users', auth.currentUser.uid, 'customModules', newModuleId), payload);
+    } catch (e) {
+      console.error("Erro ao adicionar módulo customizado no Firestore:", e);
+      throw e;
+    }
   };
 
-  const removeCustomModule = (id: string) => {
-    setCustomModules(prev => prev.filter(m => m.id !== id));
-    // Remove expenses associadas a este módulo
-    setExpenses(prev => prev.filter(e => e.category !== id));
+  const removeCustomModule = async (id: string) => {
+    if (!auth.currentUser) return;
+    try {
+      await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'customModules', id));
+      // Remove despesas associadas a este módulo customizado no Firestore
+      const associatedExpenses = expenses.filter(e => e.category === id);
+      const batchPromises = associatedExpenses.map(e => 
+        deleteDoc(doc(db, 'users', auth.currentUser!.uid, 'expenses', e.id))
+      );
+      await Promise.all(batchPromises);
+    } catch (e) {
+      console.error("Erro ao deletar módulo customizado no Firestore:", e);
+      throw e;
+    }
   };
 
-  const updateCustomModule = (id: string, item: Omit<CustomModule, 'id' | 'createdAt'>) => {
-    setCustomModules(prev =>
-      prev.map(m => {
-        if (m.id === id) {
-          return { ...m, ...item, id, createdAt: m.createdAt };
-        }
-        return m;
-      })
-    );
+  const updateCustomModule = async (id: string, item: Omit<CustomModule, 'id' | 'createdAt'>) => {
+    if (!auth.currentUser) return;
+    try {
+      const existing = customModules.find(m => m.id === id);
+      if (!existing) return;
+      const payload = {
+        ...existing,
+        ...item,
+        id,
+      };
+      await setDoc(doc(db, 'users', auth.currentUser.uid, 'customModules', id), payload);
+    } catch (e) {
+      console.error("Erro ao atualizar módulo customizado no Firestore:", e);
+      throw e;
+    }
   };
 
-  // Returns expenses whose installment range covers the selected month
+  // Retorna os gastos cujo intervalo de parcelas abrange o mês/ano selecionado
   const getFilteredExpenses = (category: Category | string): ExpenseItem[] => {
     const selYM = selectedYear * 12 + (selectedMonth - 1);
     return expenses.filter(e => {
@@ -156,7 +249,7 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Returns which installment number (1-based) is active in the given month/year
+  // Retorna qual número da parcela (1-based) está ativa no mês/ano
   const getInstallmentNumber = (item: ExpenseItem, month: number, year: number): number => {
     const [sy, sm] = item.date.split('-').map(Number);
     return (year * 12 + (month - 1)) - (sy * 12 + (sm - 1)) + 1;
@@ -165,6 +258,8 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
   return (
     <ExpenseContext.Provider
       value={{
+        user,
+        loading,
         expenses,
         addExpense,
         removeExpense,
@@ -195,6 +290,6 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
 
 export function useExpenses(): ExpenseContextType {
   const ctx = useContext(ExpenseContext);
-  if (!ctx) throw new Error('useExpenses must be used inside ExpenseProvider');
+  if (!ctx) throw new Error('useExpenses deve ser usado dentro do ExpenseProvider');
   return ctx;
 }

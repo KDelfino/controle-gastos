@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { usePreferences, type ModuleType } from '../context/PreferencesContext';
 import { useExpenses } from '../context/ExpenseContext';
 import MonthSelector from '../components/MonthSelector';
-import { MoveLeft, Settings, Plus, Pen, Trash2 } from 'lucide-react';
+import { MoveLeft, Settings, Plus, Pen, Trash2, LogOut } from 'lucide-react';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 
 interface SettingsPageProps {
   onBack: () => void;
@@ -283,6 +285,32 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
             </div>
           </div>
         )}
+
+        <section className="settings-section" style={{ marginTop: '24px' }}>
+          <h2 className="settings-section-title">Conta</h2>
+          <p className="settings-section-desc">
+            Conectado como <strong>{auth.currentUser?.email || 'Usuário'}</strong>
+          </p>
+          <button 
+            className="btn btn-ghost" 
+            style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              color: '#f87171', 
+              borderColor: 'rgba(239, 68, 68, 0.2)' 
+            }} 
+            onClick={async () => {
+              try {
+                await signOut(auth);
+              } catch (err) {
+                console.error("Erro ao deslogar:", err);
+              }
+            }}
+          >
+            <LogOut size={16} /> Sair da Conta
+          </button>
+        </section>
       </div>
     </div>
   );
