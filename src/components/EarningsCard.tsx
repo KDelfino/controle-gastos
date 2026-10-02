@@ -26,9 +26,11 @@ export default function EarningsCard({ onViewAll }: EarningsCardProps) {
           <span className="salary-title">Saldo Líquido do Mês</span>
           <span className="salary-total num-font">{fmt(balance)}</span>
         </div>
-        <div className={`balance-pill ${isPositive ? 'is-positive' : 'is-negative'}`}>
-          {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-          <span>{isPositive ? 'Superávit' : 'Déficit'}</span>
+        <div 
+          className={`balance-pill ${isPositive ? 'is-positive' : 'is-negative'}`}
+          title={isPositive ? 'Superávit' : 'Déficit'}
+        >
+          {isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
         </div>
       </div>
 

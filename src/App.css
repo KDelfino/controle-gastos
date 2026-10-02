@@ -222,16 +222,6 @@ body {
   overflow: hidden;
 }
 
-.salary-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--money-in), var(--accent));
-}
-
 .salary-card-header {
   display: flex;
   align-items: flex-start;
@@ -261,8 +251,8 @@ body {
 .balance-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  justify-content: center;
+  padding: 6px 10px;
   border-radius: var(--radius-full);
   font-size: 0.8rem;
   font-weight: 600;
