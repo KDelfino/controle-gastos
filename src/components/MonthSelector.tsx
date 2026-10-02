@@ -1,4 +1,5 @@
 import { useExpenses } from '../context/ExpenseContext';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const MONTHS = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -28,14 +29,14 @@ export default function MonthSelector() {
 
   return (
     <div className="month-selector">
-      <button className="month-btn" onClick={prev} aria-label="Mês anterior">
-        ‹
+      <button className="month-btn" onClick={prev} aria-label="Mês anterior" title="Mês anterior">
+        <ChevronLeft size={16} />
       </button>
       <span className="month-label">
-        {MONTHS[selectedMonth - 1]} {selectedYear}
+        {MONTHS[selectedMonth - 1]} <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{selectedYear}</span>
       </span>
-      <button className="month-btn" onClick={next} aria-label="Próximo mês">
-        ›
+      <button className="month-btn" onClick={next} aria-label="Próximo mês" title="Próximo mês">
+        <ChevronRight size={16} />
       </button>
     </div>
   );

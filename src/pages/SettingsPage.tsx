@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { usePreferences, type ModuleType } from '../context/PreferencesContext';
 import { useExpenses } from '../context/ExpenseContext';
 import MonthSelector from '../components/MonthSelector';
-import { MoveLeft, Settings, Plus, Pen, Trash2, LogOut } from 'lucide-react';
+import { ArrowLeft, Settings, Plus, Pen, Trash2, LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 
@@ -110,7 +110,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       <header className="app-header">
         <div className="header-top">
           <button className="btn-back" onClick={onBack}>
-            <MoveLeft size={16} /> Voltar
+            <ArrowLeft size={16} /> Voltar
           </button>
           <h1 className="app-title">
             <span className="title-icon">
@@ -292,13 +292,13 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
             Conectado como <strong>{auth.currentUser?.email || 'Usuário'}</strong>
           </p>
           <button 
-            className="btn btn-ghost" 
+            className="btn btn-ghost btn-icon--danger" 
             style={{ 
               display: 'inline-flex', 
               alignItems: 'center', 
               gap: '8px', 
-              color: '#f87171', 
-              borderColor: 'rgba(239, 68, 68, 0.2)' 
+              padding: '10px 18px',
+              borderRadius: 'var(--radius-md)'
             }} 
             onClick={async () => {
               try {

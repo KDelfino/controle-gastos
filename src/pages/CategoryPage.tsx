@@ -3,7 +3,7 @@ import type { Category, ExpenseItem } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
 import MonthSelector from '../components/MonthSelector';
 import AddExpenseModal from '../components/AddExpenseModal';
-import { CreditCard, Form, MoveLeft, NotepadText, Pen, Search, Trash2 } from "lucide-react";
+import { CreditCard, CalendarDays, ShoppingBag, ArrowLeft, Pen, Search, Trash2, Plus } from "lucide-react";
 
 interface CategoryPageProps {
   category: Category | string;
@@ -11,16 +11,18 @@ interface CategoryPageProps {
 }
 
 const CATEGORY_META: Record<Category, { title: string; icon: React.ReactNode; accentColor: string }> = {
-  cartao: { title: 'Cartão de Crédito', icon: <CreditCard size={20} />, accentColor: '#a78bfa' },
-  mensal: { title: 'Contas Mensais', icon: <Form size={20} />, accentColor: '#a78bfa' },
-  geral: { title: 'Gastos Gerais', icon: <NotepadText size={20} />, accentColor: '#a78bfa' },
+  cartao: { title: 'Cartão de Crédito', icon: <CreditCard size={18} />, accentColor: '#38bdf8' },
+  mensal: { title: 'Contas Mensais', icon: <CalendarDays size={18} />, accentColor: '#a855f7' },
+  geral: { title: 'Gastos Gerais', icon: <ShoppingBag size={18} />, accentColor: '#f59e0b' },
 };
 
 const fmt = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
 const fmtDate = (date: string) => {
-  const [year, month, day] = date.split('-');
+  const parts = date ? date.split('-') : [];
+  if (parts.length < 3) return date || '-';
+  const [year, month, day] = parts;
   return `${day}/${month}/${year}`;
 };
 
@@ -41,12 +43,11 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
   const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('date-desc');
 
-  // Pega meta do built-in ou do customModule
   const builtInMeta = CATEGORY_META[category as Category];
   const customModule = customModules.find(m => m.id === category);
   const title = builtInMeta?.title || customModule?.name || 'Gastos';
   const icon = builtInMeta?.icon || null;
-  const accentColor = customModule?.color || builtInMeta?.accentColor || '#a78bfa';
+  const accentColor = customModule?.color || builtInMeta?.accentColor || '#38bdf8';
 
   const items = getFilteredExpenses(category);
   const total = items.reduce((sum, i) => sum + i.amount, 0);
@@ -87,24 +88,37 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
     <div className="page">
       <header className="app-header">
         <div className="header-top">
-          <button className="btn-back" onClick={onBack}>
-            <MoveLeft size={16} /> Voltar
-          </button>
-          <h1 className="app-title" style={{ color: accentColor }}>
-            {icon && <span className="title-icon">{icon}</span>}
-            {title}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button className="btn-back" onClick={onBack}>
+              <ArrowLeft size={16} /> Voltar
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {icon && (
+                <span style={{ 
+                  display: 'inline-flex', 
+                  padding: '6px', 
+                  borderRadius: 'var(--radius-sm)', 
+                  background: 'var(--surface)', 
+                  border: '1px solid var(--border)',
+                  color: accentColor 
+                }}>
+                  {icon}
+                </span>
+              )}
+              <h1 className="app-title" style={{ fontSize: '1.35rem' }}>{title}</h1>
+            </div>
+          </div>
         </div>
         <MonthSelector />
       </header>
 
       <div className="detail-toolbar">
         <span className="detail-total">
-          Total: <strong>{fmt(total)}</strong>
-          <small> ({items.length} item{items.length !== 1 ? 's' : ''})</small>
+          Total de saídas: <strong>{fmt(total)}</strong>
+          <small>({items.length} {items.length === 1 ? 'item' : 'itens'})</small>
         </span>
         <button className="btn btn-primary" onClick={handleAdd}>
-          + Adicionar
+          <Plus size={16} /> Adicionar lançamento
         </button>
       </div>
 
@@ -114,7 +128,7 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
           <input
             className="search-input"
             type="text"
-            placeholder="Buscar gasto..."
+            placeholder="Buscar por descrição..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -135,9 +149,9 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
       {sorted.length === 0 ? (
         <div className="empty-state">
           {search
-            ? <p>Nenhum resultado para "<strong>{search}</strong>".</p>
-            : <><p>Nenhum gasto registrado neste mês.</p>
-                <button className="btn btn-primary" onClick={handleAdd}>Adicionar primeiro gasto</button></>
+            ? <p>Nenhum lançamento encontrado para "<strong>{search}</strong>".</p>
+            : <><p>Nenhum gasto registrado nesta categoria para o mês selecionado.</p>
+                <button className="btn btn-primary" onClick={handleAdd}><Plus size={16} /> Adicionar primeiro gasto</button></>
           }
         </div>
       ) : (
@@ -159,7 +173,7 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
                   <tr key={item.id}>
                     <td>
                       {current !== null && current === n && (
-                        <div className="last-installment-label">Última parcela!</div>
+                        <div className="last-installment-label">Última parcela</div>
                       )}
                       <div>
                         <span className="item-desc-cell">{item.description}</span>
@@ -168,8 +182,8 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
                         )}
                       </div>
                     </td>
-                    <td>{fmtDate(item.date)}</td>
-                    <td className="col-amount amount-cell">{fmt(item.amount)}</td>
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.84rem' }}>{fmtDate(item.date)}</td>
+                    <td className="col-amount amount-cell num-font">{fmt(item.amount)}</td>
                     <td className="col-actions">
                       <button className="btn-icon" title="Editar" onClick={() => handleEdit(item)}>
                         <Pen size={14} />
@@ -193,8 +207,8 @@ export default function CategoryPage({ category, onBack }: CategoryPageProps) {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={2}><strong>Total{search ? ' (filtrado)' : ''}</strong></td>
-                <td className="col-amount amount-cell">
+                <td colSpan={2}><strong>Total {search ? 'filtrado' : 'da categoria'}</strong></td>
+                <td className="col-amount amount-cell num-font">
                   <strong>{fmt(filtered.reduce((s, i) => s + i.amount, 0))}</strong>
                 </td>
                 <td />

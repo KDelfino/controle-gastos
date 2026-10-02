@@ -44,7 +44,12 @@ export default function AddExpenseModal({ category, onClose, editItem }: AddExpe
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <h3 className="modal-title">{editItem ? 'Editar Gasto' : 'Novo Gasto'}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <h3 className="modal-title" style={{ margin: 0 }}>{editItem ? 'Editar Gasto' : 'Novo Gasto'}</h3>
+          <button type="button" className="btn-icon" onClick={onClose} aria-label="Fechar">
+            ✕
+          </button>
+        </div>
         {editItem && (editItem.installments ?? 1) > 1 && (
           <p className="modal-edit-warning">Editar aqui altera todas as parcelas.</p>
         )}

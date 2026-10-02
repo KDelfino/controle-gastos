@@ -42,7 +42,12 @@ export default function AddEarningsModal({ onClose, editItem }: AddEarningsModal
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <h3 className="modal-title">{editItem ? 'Editar Ganho' : 'Novo Ganho'}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <h3 className="modal-title" style={{ margin: 0 }}>{editItem ? 'Editar Ganho' : 'Novo Ganho'}</h3>
+          <button type="button" className="btn-icon" onClick={onClose} aria-label="Fechar">
+            ✕
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="modal-form">
           <label className="form-label">
             Valor do ganho (R$)

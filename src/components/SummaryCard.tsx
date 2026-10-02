@@ -1,5 +1,6 @@
 import type { Category } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
+import { ChevronRight } from 'lucide-react';
 
 interface SummaryCardProps {
   category: Category | string;
@@ -17,7 +18,7 @@ export default function SummaryCard({
   category,
   title,
   icon,
-  accentColor = '#a78bfa',
+  accentColor = '#38bdf8',
   customColor,
   onViewAll,
 }: SummaryCardProps) {
@@ -28,18 +29,27 @@ export default function SummaryCard({
   const color = customColor || accentColor;
 
   return (
-    <div className="summary-card" style={{ '--accent': color } as React.CSSProperties}>
+    <div className="summary-card">
       <div className="summary-card-header">
-        {icon && <span className="summary-icon">{icon}</span>}
-        <div>
-          <h2 className="summary-title">{title}</h2>
-          <p className="summary-total">{fmt(total)}</p>
+        <div className="summary-header-left">
+          {icon && (
+            <span className="summary-icon" style={{ color }}>
+              {icon}
+            </span>
+          )}
+          <div>
+            <h2 className="summary-title">{title}</h2>
+            <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>
+              {items.length} {items.length === 1 ? 'lançamento' : 'lançamentos'}
+            </span>
+          </div>
         </div>
+        <p className="summary-total num-font">{fmt(total)}</p>
       </div>
 
       <ul className="summary-list">
         {top3.length === 0 ? (
-          <li className="empty-text">Nenhum gasto neste mês</li>
+          <li className="empty-text">Sem lançamentos neste mês</li>
         ) : (
           top3.map(item => {
             const n = item.installments ?? 1;
@@ -48,25 +58,27 @@ export default function SummaryCard({
               <li key={item.id} className="summary-list-item">
                 <span className="item-desc">
                   {current !== null && current === n && (
-                    <span className="last-installment-label" style={{ marginRight: '6px', marginBottom: 0 }}>Última</span>
+                    <span className="last-installment-label" style={{ marginRight: '4px', marginBottom: 0 }}>
+                      Última
+                    </span>
                   )}
-                  {item.description}
+                  <span>{item.description}</span>
                   {current !== null && (
                     <span className="installment-badge">{current}/{n}</span>
                   )}
                 </span>
-                <span className="item-amount">{fmt(item.amount)}</span>
+                <span className="item-amount num-font">{fmt(item.amount)}</span>
               </li>
             );
           })
         )}
         {items.length > 3 && (
-          <li className="summary-more">+{items.length - 3} item(s) a mais</li>
+          <li className="summary-more">+{items.length - 3} lançamento(s) oculto(s)</li>
         )}
       </ul>
 
       <button className="btn-view-all" onClick={onViewAll}>
-        Ver todos
+        Ver extrato completo <ChevronRight size={14} />
       </button>
     </div>
   );

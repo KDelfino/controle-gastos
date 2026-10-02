@@ -3,7 +3,7 @@ import type { SalaryItem } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
 import MonthSelector from '../components/MonthSelector';
 import AddEarningsModal from '../components/AddEarningsModal';
-import { DollarSign, MoveLeft, Pen, Trash2 } from 'lucide-react';
+import { TrendingUp, ArrowLeft, Pen, Trash2, Plus } from 'lucide-react';
 
 interface EarningsPageProps {
   onBack: () => void;
@@ -69,33 +69,43 @@ export default function EarningsPage({ onBack }: EarningsPageProps) {
     <div className="page">
       <header className="app-header">
         <div className="header-top">
-          <button className="btn-back" onClick={onBack}>
-            <MoveLeft size={16} /> Voltar
-          </button>
-          <h1 className="app-title">
-            <span className="title-icon">
-              <DollarSign size={20} />
-            </span>
-            Gerenciar Ganhos
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button className="btn-back" onClick={onBack}>
+              <ArrowLeft size={16} /> Voltar
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ 
+                display: 'inline-flex', 
+                padding: '6px', 
+                borderRadius: 'var(--radius-sm)', 
+                background: 'var(--surface)', 
+                border: '1px solid var(--border)',
+                color: 'var(--money-in)' 
+              }}>
+                <TrendingUp size={18} />
+              </span>
+              <h1 className="app-title" style={{ fontSize: '1.35rem' }}>Gerenciar Ganhos</h1>
+            </div>
+          </div>
         </div>
         <MonthSelector />
       </header>
 
       <div className="detail-toolbar">
         <span className="detail-total">
-          Ganhos ativos no mês: <strong>{fmt(currentMonthEarningsTotal)}</strong>
+          Total de receitas no mês: <strong style={{ color: 'var(--money-in)' }}>{fmt(currentMonthEarningsTotal)}</strong>
+          <small>({sortedEarnings.length} {sortedEarnings.length === 1 ? 'receita ativa' : 'receitas ativas'})</small>
         </span>
         <button className="btn btn-primary" onClick={handleAdd}>
-          + Adicionar
+          <Plus size={16} /> Adicionar receita
         </button>
       </div>
 
       {sortedEarnings.length === 0 ? (
         <div className="empty-state">
-          <p>Nenhum ganho registrado para este mês.</p>
+          <p>Nenhuma receita registrada ou ativa para o mês selecionado.</p>
           <button className="btn btn-primary" onClick={handleAdd}>
-            Adicionar primeiro ganho
+            <Plus size={16} /> Adicionar primeiro ganho
           </button>
         </div>
       ) : (
@@ -117,21 +127,23 @@ export default function EarningsPage({ onBack }: EarningsPageProps) {
                   <tr key={item.id}>
                     <td>
                       {current !== null && current === n && (
-                        <div className="last-installment-label" style={{ color: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
-                          Último ganho!
+                        <div className="last-installment-label" style={{ color: 'var(--money-in)', background: 'var(--money-in-bg)', borderColor: 'var(--money-in-border)' }}>
+                          Último recebimento
                         </div>
                       )}
                       <div>
                         <span className="item-desc-cell">{item.description || 'Ganho sem descrição'}</span>
                         {current !== null && (
-                          <span className="installment-badge" style={{ color: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.25)' }}>
+                          <span className="installment-badge" style={{ color: 'var(--money-in)' }}>
                             {current}/{n}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td>{fmtDate(item.date)}</td>
-                    <td className="col-amount amount-cell" style={{ color: '#10b981' }}>{fmt(item.amount)}</td>
+                    <td style={{ color: 'var(--text-muted)', fontSize: '0.84rem' }}>{fmtDate(item.date)}</td>
+                    <td className="col-amount amount-cell num-font" style={{ color: 'var(--money-in)' }}>
+                      {fmt(item.amount)}
+                    </td>
                     <td className="col-actions">
                       <button className="btn-icon" title="Editar" onClick={() => handleEdit(item)}>
                         <Pen size={14} />
@@ -153,6 +165,15 @@ export default function EarningsPage({ onBack }: EarningsPageProps) {
                 );
               })}
             </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={2}><strong>Total de ganhos do mês</strong></td>
+                <td className="col-amount amount-cell num-font" style={{ color: 'var(--money-in)' }}>
+                  <strong>{fmt(currentMonthEarningsTotal)}</strong>
+                </td>
+                <td />
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}
