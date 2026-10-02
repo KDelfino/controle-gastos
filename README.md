@@ -21,7 +21,7 @@ Este projeto foi construído focando em boas práticas de mercado, arquitetura e
   - **Firebase Security Rules:** Proteção em nível de banco garantindo que cada usuário só leia e escreva seus próprios registros.
 ---
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 - **Autenticação com Google (OAuth):** Login prático e seguro usando a conta Google via Firebase Auth.
 - **Sincronização em Nuvem em Tempo Real:** Todas as receitas e despesas são gravadas instantaneamente no Cloud Firestore.
