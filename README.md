@@ -44,3 +44,5 @@ Rode
 npm run dev
 ```
 Abra http://localhost:5173 (ou a porta indicada) no navegador.
+
+Teste em funcionamento: https://controle-gastos-sandy.vercel.app/
