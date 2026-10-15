@@ -1,6 +1,7 @@
 import type { Category } from '../types';
+import { EXPENSE_TYPES } from '../types';
 import { useExpenses } from '../context/ExpenseContext';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Repeat } from 'lucide-react';
 
 interface SummaryCardProps {
   category: Category | string;
@@ -53,7 +54,10 @@ export default function SummaryCard({
         ) : (
           top3.map(item => {
             const n = item.installments ?? 1;
-            const current = n > 1 ? getInstallmentNumber(item, selectedMonth, selectedYear) : null;
+            const isRec = !!item.recurring;
+            const current = !isRec && n > 1 ? getInstallmentNumber(item, selectedMonth, selectedYear) : null;
+            const typeConfig = item.type ? EXPENSE_TYPES.find(t => t.id === item.type) : undefined;
+
             return (
               <li key={item.id} className="summary-list-item">
                 <span className="item-desc">
@@ -61,6 +65,18 @@ export default function SummaryCard({
                     <span className="last-installment-label" style={{ marginRight: '4px', marginBottom: 0 }}>
                       Última
                     </span>
+                  )}
+                  {isRec && (
+                    <span className="recurring-badge-mini" title="Cobrado todo mês">
+                      <Repeat size={10} />
+                    </span>
+                  )}
+                  {typeConfig && (
+                    <span 
+                      className="type-dot" 
+                      style={{ backgroundColor: typeConfig.color }} 
+                      title={typeConfig.label} 
+                    />
                   )}
                   <span>{item.description}</span>
                   {current !== null && (

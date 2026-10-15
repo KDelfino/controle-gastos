@@ -21,15 +21,19 @@ Este projeto foi construído focando em boas práticas de mercado, arquitetura e
   - **Firebase Security Rules:** Proteção em nível de banco garantindo que cada usuário só leia e escreva seus próprios registros.
 ---
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 - **Autenticação com Google (OAuth):** Login prático e seguro usando a conta Google via Firebase Auth.
 - **Sincronização em Nuvem em Tempo Real:** Todas as receitas e despesas são gravadas instantaneamente no Cloud Firestore.
 - **Gestão de Ganhos / Receitas:**
   - Cadastro de entradas (salário, freelance, rendimentos).
   - Suporte a **lançamentos parcelados ou recorrentes** (ex: salário cadastrado com 12 meses de recorrência automática).
-- **Categorização de Despesas:**
-  - Despesas fixas, mensais, cartões e categorias customizáveis.
+- **Categorização e Tipificação de Gastos:**
+  - Classificação por tipo/natureza do gasto: **Alimentação, Contas, Educação, Transporte, Compras, Games, Assinaturas, Roupa e Saúde** (estruturado para relatórios e futuros gráficos).
+  - Filtro interativo por tipo na listagem de extrato.
+- **Gastos Contínuos (Recorrentes) & Parcelamentos:**
+  - Suporte a **gastos contínuos** (ex: convênio, internet, academia): repetem todo mês sem necessidade de definir parcelas fixas.
+  - **Cancelamento inteligente com histórico preservado**: ao encerrar um gasto contínuo (ex: em novembro), ele para de aparecer nos meses seguintes, mas continua registrado nos meses anteriores.
   - Controle e projeção de **compras parceladas** com identificação da parcela atual e total (ex: `3/10`).
 - **Cockpit Financeiro:**
   - Saldo líquido do mês (Entradas vs Saídas).

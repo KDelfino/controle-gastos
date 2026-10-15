@@ -34,6 +34,7 @@ interface ExpenseContextType {
   getFilteredSalaries: () => SalaryItem[];
   getTotalExpensesForMonth: (month: number, year: number) => number;
   getBalance: (month: number, year: number) => number;
+  cancelRecurringExpense: (id: string, endYear: number, endMonth: number) => Promise<void>;
   customModules: CustomModule[];
   addCustomModule: (item: Omit<CustomModule, 'id' | 'createdAt'>) => Promise<void>;
   removeCustomModule: (id: string) => Promise<void>;
@@ -200,14 +201,50 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const cancelRecurringExpense = async (id: string, endYear: number, endMonth: number) => {
+    if (!auth.currentUser) return;
+    try {
+      const item = expenses.find(e => e.id === id);
+      if (!item) return;
+      const endYearMonth = `${endYear}-${String(endMonth).padStart(2, '0')}`;
+      const payload = {
+        ...item,
+        endDate: endYearMonth,
+      };
+      // Remove o campo id antes de salvar no Firestore
+      delete (payload as any).id;
+      await setDoc(doc(db, 'users', auth.currentUser.uid, 'expenses', id), payload);
+    } catch (e) {
+      console.error("Erro ao encerrar despesa recorrente no Firestore:", e);
+      throw e;
+    }
+  };
+
+  const isExpenseActiveInMonth = (e: ExpenseItem, month: number, year: number): boolean => {
+    if (!e.date) return false;
+    const [sy, sm] = e.date.split('-').map(Number);
+    const startYM = sy * 12 + (sm - 1);
+    const targetYM = year * 12 + (month - 1);
+
+    if (targetYM < startYM) return false;
+
+    if (e.recurring) {
+      if (e.endDate) {
+        const [ey, em] = e.endDate.split('-').map(Number);
+        const endYM = ey * 12 + (em - 1);
+        return targetYM <= endYM;
+      }
+      return true;
+    }
+
+    const n = e.installments ?? 1;
+    return targetYM < startYM + n;
+  };
+
   const getTotalExpensesForMonth = (month: number, year: number): number => {
-    const selYM = year * 12 + (month - 1);
-    return expenses.filter(e => {
-      const [sy, sm] = e.date.split('-').map(Number);
-      const startYM = sy * 12 + (sm - 1);
-      const n = e.installments ?? 1;
-      return selYM >= startYM && selYM < startYM + n;
-    }).reduce((sum, i) => sum + i.amount, 0);
+    return expenses
+      .filter(e => isExpenseActiveInMonth(e, month, year))
+      .reduce((sum, i) => sum + i.amount, 0);
   };
 
   const getBalance = (month: number, year: number): number => {
@@ -264,20 +301,14 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Retorna os gastos cujo intervalo de parcelas abrange o mês/ano selecionado
+  // Retorna os gastos cujo intervalo de parcelas ou recorrência abrange o mês/ano selecionado
   const getFilteredExpenses = (category: Category | string): ExpenseItem[] => {
-    const selYM = selectedYear * 12 + (selectedMonth - 1);
-    return expenses.filter(e => {
-      if (e.category !== category) return false;
-      const [sy, sm] = e.date.split('-').map(Number);
-      const startYM = sy * 12 + (sm - 1);
-      const n = e.installments ?? 1;
-      return selYM >= startYM && selYM < startYM + n;
-    });
+    return expenses.filter(e => e.category === category && isExpenseActiveInMonth(e, selectedMonth, selectedYear));
   };
 
   // Retorna qual número da parcela (1-based) está ativa no mês/ano
   const getInstallmentNumber = (item: ExpenseItem, month: number, year: number): number => {
+    if (item.recurring) return 1;
     const [sy, sm] = item.date.split('-').map(Number);
     return (year * 12 + (month - 1)) - (sy * 12 + (sm - 1)) + 1;
   };
@@ -306,6 +337,7 @@ export function ExpenseProvider({ children }: { children: ReactNode }) {
         getFilteredSalaries,
         getTotalExpensesForMonth,
         getBalance,
+        cancelRecurringExpense,
         customModules,
         addCustomModule,
         removeCustomModule,
